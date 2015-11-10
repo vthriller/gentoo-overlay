@@ -58,13 +58,26 @@ def try_fetch_symbols(filename, build_id, destination):
         return None
 
 
+def is_moz_binary(filename):
+    '''
+    Try to determine if a file lives in a Firefox install dir, to save
+    HTTP requests for things that aren't going to work.
+    '''
+    while True:
+        filename = os.path.dirname(filename)
+        if filename == '/':
+            return False
+        if os.path.isfile(os.path.join(filename, 'run-mozilla.sh')):
+            return True
+
+
 def fetch_symbols_for(objfile):
     build_id = objfile.build_id if hasattr(objfile, 'build_id') else None
     if getattr(objfile, 'owner', None) is not None or any(o.owner == objfile for o in gdb.objfiles()):
         # This is either a separate debug file or this file already
         # has symbols in a separate debug file.
         return
-    if build_id:
+    if build_id and is_moz_binary(objfile.filename):
         debug_file = try_fetch_symbols(os.path.basename(objfile.filename), build_id, cache_dir)
         if debug_file:
             objfile.add_separate_debug_file(debug_file)
