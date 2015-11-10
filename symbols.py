@@ -4,6 +4,8 @@
 # A GDB Python script to fetch debug symbols from the Mozilla symbol server.
 #
 
+from __future__ import print_function
+
 import gzip
 import io
 import itertools
@@ -12,12 +14,16 @@ import shutil
 import sys
 try:
     from urllib.request import urlopen
-    from urllib.parse import urljoin
+    from urllib.parse import urljoin, quote
 except ImportError:
     from urllib2 import urlopen
+    from urllib import quote
     from urlparse import urljoin
 
 SYMBOL_SERVER_URL = 'https://s3-us-west-2.amazonaws.com/org.mozilla.crash-stats.symbols-public/v1/'
+
+debug_dir = os.path.join(os.environ['HOME'], '.cache', 'gdb')
+cache_dir = os.path.join(debug_dir, '.build-id')
 
 def munge_build_id(build_id):
     '''
@@ -29,32 +35,66 @@ def munge_build_id(build_id):
                                    reversed(b[6:8]), b[8:16])) + '0'
 
 def try_fetch_symbols(filename, build_id, destination):
-    debug_file = os.path.join(destination, filename + '.dbg')
+    debug_file = os.path.join(destination, build_id[:2], build_id[2:] + '.debug')
     if os.path.exists(debug_file):
         return debug_file
-    path = os.path.join(filename, munge_build_id(build_id), filename + '.dbg.gz')
-    url = urljoin(SYMBOL_SERVER_URL, urllib.parse.quote(path))
     try:
-        print('Fetching symbols from {0}'.format(url))
+        d = os.path.dirname(debug_file)
+        if not os.path.isdir(d):
+            os.makedirs(d)
+    except OSError:
+        pass
+    path = os.path.join(filename, munge_build_id(build_id), filename + '.dbg.gz')
+    url = urljoin(SYMBOL_SERVER_URL, quote(path))
+    try:
         u = urlopen(url)
         if u.getcode() != 200:
             return None
+        print('Fetching symbols from {0}'.format(url))
         with open(debug_file, 'wb') as f, gzip.GzipFile(fileobj=io.BytesIO(u.read()), mode='r') as z:
             shutil.copyfileobj(z, f)
             return debug_file
     except:
         return None
 
-def new_objfile(event):
-    build_id = event.new_objfile.build_id if hasattr(event.new_objfile, 'build_id') else None
-    print('New objfile: {0} {1}'.format(event.new_objfile.filename, build_id))
-    if build_id:
-        debug_file = try_fetch_symbols(os.path.basename(event.new_objfile.filename), build_id, '/tmp/gdb-symbols')
-        if debug_file:
-            event.new_objfile.add_separate_debug_file(debug_file)
 
-gdb.events.new_objfile.connect(new_objfile)
+def fetch_symbols_for(objfile):
+    build_id = objfile.build_id if hasattr(objfile, 'build_id') else None
+    if getattr(objfile, 'owner', None) is not None or any(o.owner == objfile for o in gdb.objfiles()):
+        # This is either a separate debug file or this file already
+        # has symbols in a separate debug file.
+        return
+    if build_id:
+        debug_file = try_fetch_symbols(os.path.basename(objfile.filename), build_id, cache_dir)
+        if debug_file:
+            objfile.add_separate_debug_file(debug_file)
+
+
+def new_objfile(event):
+    fetch_symbols_for(event.new_objfile)
+
+
+def fetch_symbols():
+    '''
+    Try to fetch symbols for all loaded modules.
+    '''
+    for objfile in gdb.objfiles():
+        fetch_symbols_for(objfile)
+
+# Create our debug cache dir.
 try:
-    os.mkdir('/tmp/gdb-symbols')
+    if not os.path.isdir(cache_dir):
+        os.makedirs(cache_dir)
 except OSError:
     pass
+
+# Set it as a debug-file-directory.
+try:
+    dirs = gdb.parameter('debug-file-directory').split(':')
+except gdb.error:
+    dirs = []
+if debug_dir not in dirs:
+    dirs.append(debug_dir)
+    gdb.execute('set debug-file-directory %s' % ':'.join(dirs))
+
+gdb.events.new_objfile.connect(new_objfile)
