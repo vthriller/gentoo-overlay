@@ -4,17 +4,18 @@
 # A GDB Python script to fetch debug symbols from the Mozilla symbol server.
 #
 
-
-
 import gzip
 import io
 import itertools
 import os
 import shutil
 import sys
-import urllib.request, urllib.parse, urllib.error
-import urllib.request, urllib.error, urllib.parse
-import urllib.parse
+try:
+    from urllib.request import urlopen
+    from urllib.parse import urljoin
+except ImportError:
+    from urllib2 import urlopen
+    from urlparse import urljoin
 
 SYMBOL_SERVER_URL = 'https://s3-us-west-2.amazonaws.com/org.mozilla.crash-stats.symbols-public/v1/'
 
@@ -32,10 +33,10 @@ def try_fetch_symbols(filename, build_id, destination):
     if os.path.exists(debug_file):
         return debug_file
     path = os.path.join(filename, munge_build_id(build_id), filename + '.dbg.gz')
-    url = urllib.parse.urljoin(SYMBOL_SERVER_URL, urllib.parse.quote(path))
+    url = urljoin(SYMBOL_SERVER_URL, urllib.parse.quote(path))
     try:
         print('Fetching symbols from {0}'.format(url))
-        u = urllib.request.urlopen(url)
+        u = urlopen(url)
         if u.getcode() != 200:
             return None
         with open(debug_file, 'wb') as f, gzip.GzipFile(fileobj=io.BytesIO(u.read()), mode='r') as z:
