@@ -3,6 +3,8 @@
 #
 # A GDB Python script to fetch debug symbols from the Mozilla symbol server.
 #
+# To use, run `source /path/to/symbols.py` in GDB 7.9 or newer, or
+# put that in your ~/.gdbinit.
 
 from __future__ import print_function
 
