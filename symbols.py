@@ -65,6 +65,9 @@ def is_moz_binary(filename):
     Try to determine if a file lives in a Firefox install dir, to save
     HTTP requests for things that aren't going to work.
     '''
+    # The linux-gate VDSO doesn't have a real filename.
+    if not os.path.isfile(filename):
+        return False
     while True:
         filename = os.path.dirname(filename)
         if filename == '/':
