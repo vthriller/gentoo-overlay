@@ -72,7 +72,7 @@ def is_moz_binary(filename):
         filename = os.path.dirname(filename)
         if filename == '/':
             return False
-        if os.path.isfile(os.path.join(filename, 'run-mozilla.sh')):
+        if os.path.isfile(os.path.join(filename, 'application.ini')):
             return True
 
 
