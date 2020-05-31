@@ -5,7 +5,7 @@ EAPI=7
 
 DESCRIPTION="Simple XLib program to highlight the cursor position."
 HOMEPAGE="https://github.com/arp242/find-cursor"
-SRC_URI="https://github.com/arp242/${PN}/archive/v${PV}.tar.gz"
+SRC_URI="https://github.com/arp242/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz"
 
 LICENSE="MIT"
 SLOT="0"

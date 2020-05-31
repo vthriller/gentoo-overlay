@@ -7,7 +7,7 @@ EGIT_COMMIT=10674328e5f058ceff8fcad5398e9d2c489a647a
 
 DESCRIPTION="Visual Bell for X11"
 HOMEPAGE="https://github.com/rianhunter/xvisbell"
-SRC_URI="https://github.com/rianhunter/${PN}/archive/${EGIT_COMMIT}.zip -> ${P}.zip"
+SRC_URI="https://github.com/rianhunter/${PN}/archive/${EGIT_COMMIT}.tar.gz -> ${P}.tar.gz"
 S="${WORKDIR}/${PN}-${EGIT_COMMIT}"
 
 LICENSE="GPL-3"
@@ -16,7 +16,7 @@ KEYWORDS="~amd64 ~x86"
 IUSE=""
 
 RDEPEND="x11-libs/libX11"
-DEPEND="${RDEPEND} app-arch/unzip"
+DEPEND="${RDEPEND}"
 BDEPEND=""
 
 src_install() {
