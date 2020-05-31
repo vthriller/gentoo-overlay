@@ -20,6 +20,5 @@ DEPEND="${RDEPEND}"
 BDEPEND=""
 
 src_install() {
-	mkdir -p ${D}/usr/bin/
-	cp xvisbell ${D}/usr/bin/
+	dobin xvisbell
 }
