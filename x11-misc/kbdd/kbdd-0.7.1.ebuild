@@ -9,6 +9,8 @@ DESCRIPTION="Very simple layout switcher"
 HOMEPAGE="https://github.com/qnikst/kbdd"
 SRC_URI="https://github.com/qnikst/kbdd/tarball/v${PV} -> ${PN}-${PV}.tar.gz"
 
+PATCHES=(${FILESDIR}/dowhile.patch)
+
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
@@ -24,6 +26,7 @@ DEPEND="dev-libs/glib:2=
 RDEPEND="${DEPEND}"
 
 src_prepare() {
+	default
 	eautoreconf
 }
 
