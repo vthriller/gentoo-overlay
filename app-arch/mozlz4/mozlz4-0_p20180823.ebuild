@@ -5,7 +5,7 @@ EAPI=7
 
 DESCRIPTION="MozLz4a compression/decompression utility"
 HOMEPAGE="https://gist.github.com/kaefer3000/73febe1eec898cd50ce4de1af79a332a"
-SRC_URI="https://gist.githubusercontent.com/kaefer3000/73febe1eec898cd50ce4de1af79a332a/raw/a266410033455d6b4af515d7a9d34f5afd35beec/mozlz4a.py -> mozlz4"
+SRC_URI="https://gist.githubusercontent.com/kaefer3000/73febe1eec898cd50ce4de1af79a332a/raw/a266410033455d6b4af515d7a9d34f5afd35beec/mozlz4a.py -> mozlz4-${PV}"
 
 S="${WORKDIR}"
 
@@ -19,7 +19,7 @@ DEPEND="${RDEPEND}"
 BDEPEND=""
 
 src_unpack() {
-	cp "${DISTDIR}/${A}" "${WORKDIR}"
+	cp "${DISTDIR}/${A}" "${WORKDIR}/mozlz4"
 }
 
 src_install() {
