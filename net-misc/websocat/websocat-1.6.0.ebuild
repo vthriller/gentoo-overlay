@@ -176,9 +176,16 @@ SRC_URI="https://github.com/vi/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz
 LICENSE="MIT"
 KEYWORDS="~amd64 ~x86"
 SLOT="0"
-IUSE=""
+IUSE="+ssl"
 
 DOCS=( {doc,moreexamples,README}.md )
+
+src_configure() {
+	local myfeatures=(
+		$(usev ssl)
+	)
+	cargo_src_configure
+}
 
 src_install() {
 	einstalldocs
