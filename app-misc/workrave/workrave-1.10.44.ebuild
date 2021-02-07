@@ -3,7 +3,7 @@
 
 EAPI=6
 GNOME2_LA_PUNT="yes"
-PYTHON_COMPAT=( python2_7 )
+PYTHON_COMPAT=( python3_{6,7,8,9} )
 
 inherit autotools gnome2 python-single-r1 versionator vcs-snapshot
 
@@ -14,10 +14,9 @@ SRC_URI="https://github.com/rcaelers/${PN}/archive/v${MY_PV}.tar.gz -> ${P}.tar.
 
 LICENSE="GPL-3+"
 SLOT="0"
-KEYWORDS="amd64 ~ppc x86"
+KEYWORDS="~amd64 ~ppc ~x86"
 
-# dbus support looks to be used only for trying to use panel applets on gnome3!
-IUSE="appindicator doc gnome gstreamer introspection mate nls pulseaudio test xfce"
+IUSE="appindicator dbus doc gnome gstreamer introspection mate nls pulseaudio test xfce"
 RESTRICT="!test? ( test )"
 REQUIRED_USE="appindicator? ( introspection ) ${PYTHON_REQUIRED_USE}"
 
@@ -30,6 +29,13 @@ RDEPEND="
 	appindicator? (
 		>=dev-libs/libdbusmenu-0.4[gtk3,introspection]
 		>=dev-libs/libindicator-0.4:3 )
+	dbus? (
+		dev-libs/boost
+		dev-libs/dbus-glib
+		>=sys-apps/dbus-1.2
+		${PYTHON_DEPS}
+		gnome? ( gnome-base/gnome-panel )
+	)
 	gnome? ( >=gnome-base/gnome-shell-3.6.2 )
 	gstreamer? (
 		media-libs/gstreamer:1.0[introspection?]
@@ -47,19 +53,14 @@ RDEPEND="
 	x11-libs/libXtst
 	x11-libs/libXt
 	x11-libs/libXmu
-	${PYTHON_DEPS}
 "
-#        dbus? (
-#                >=sys-apps/dbus-1.2
-#                dev-libs/dbus-glib )
-
 DEPEND="${RDEPEND}
-	dev-python/cheetah
 	dev-util/glib-utils
 	>=dev-util/intltool-0.40.0
 	sys-devel/autoconf-archive
 	x11-base/xorg-proto
 	virtual/pkgconfig
+	dbus? ( dev-python/jinja )
 	doc? (
 		app-text/docbook-sgml-utils
 		app-text/xmlto )
@@ -77,7 +78,7 @@ src_unpack() {
 src_prepare() {
 	# Fix gstreamer slot automagic dependency, bug #563584
 	# http://issues.workrave.org/show_bug.cgi?id=1179
-	eapply "${FILESDIR}"/${PN}-1.10.6-automagic-gstreamer.patch
+	eapply "${FILESDIR}"/${P}-automagic-gstreamer.patch
 
 	eautoreconf
 	gnome2_src_prepare
@@ -87,14 +88,13 @@ src_configure() {
 	# gnet ("distribution") is dead for ages and other distributions stopped
 	# relying on it for such time too.
 	gnome2_src_configure \
-		--disable-dbus \
 		--disable-distribution \
 		--enable-exercises \
 		--disable-experimental \
-		--disable-gnome2 \
 		--disable-static \
 		--disable-xml \
 		$(use_enable appindicator indicator) \
+		$(use_enable dbus) \
 		$(use_enable doc manual) \
 		$(use_enable gnome gnome3) \
 		$(use_enable gstreamer) \
