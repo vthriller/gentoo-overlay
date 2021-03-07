@@ -2,7 +2,9 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
-WX_GTK_VER="3.0-gtk3"
+# https://bugs.gentoo.org/711444
+#WX_GTK_VER="3.0-gtk3"
+WX_GTK_VER="3.0"
 
 inherit cmake flag-o-matic wxwidgets xdg
 
