@@ -4,7 +4,7 @@
 EAPI=6
 PYTHON_COMPAT=( python3_{6,7,8,9} )
 
-inherit autotools multilib eutils python-single-r1 bash-completion-r1 elisp-common
+inherit autotools multilib eutils python-single-r1 bash-completion-r1
 
 DESCRIPTION="Program matching and transformation engine"
 HOMEPAGE="http://coccinelle.lip6.fr/"
@@ -13,7 +13,7 @@ SRC_URI="https://github.com/coccinelle/coccinelle/archive/1.0.8.tar.gz -> ${P}.t
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
-IUSE="doc emacs ocaml +ocamlopt pcre python test vim-syntax"
+IUSE="doc ocaml +ocamlopt pcre python test vim-syntax"
 REQUIRED_USE="${PYTHON_REQUIRED_USE}"
 
 # ocaml enables ocaml scripting (uses findlib)
@@ -22,7 +22,6 @@ CDEPEND=">=dev-lang/ocaml-3.12:=[ocamlopt?]
 	dev-ml/menhir:=[ocamlopt?]
 	dev-ml/camlp4:=[ocamlopt?]
 	dev-ml/parmap:=[ocamlopt?]
-	emacs? ( >=app-editors/emacs-23.1:* )
 	ocaml? ( dev-ml/findlib:= )
 	pcre? ( dev-ml/pcre-ocaml:=[ocamlopt(+)?] )
 	python? ( ${PYTHON_DEPS} )"
@@ -42,8 +41,6 @@ DEPEND="${CDEPEND}
 DOCS=( authors.txt bugs.txt changes.txt credits.txt readme.txt )
 
 RESTRICT="strip !test? ( test )"
-
-SITEFILE=50coccinelle-gentoo.el
 
 pkg_setup() {
 	use python && python-single-r1_pkg_setup
@@ -81,10 +78,6 @@ src_compile() {
 	if use doc ; then
 		VARTEXFONTS="${T}"/fonts emake docs
 	fi
-
-	if use emacs ; then
-		elisp-compile editors/emacs/cocci.el || die
-	fi
 }
 
 src_test() {
@@ -98,11 +91,6 @@ src_install() {
 	use doc && dodoc docs/manual/*.pdf
 	newbashcomp scripts/spatch.bash_completion spatch
 
-	if use emacs ; then
-		elisp-install ${PN} editors/emacs/*
-		elisp-site-file-install "${FILESDIR}"/${SITEFILE}
-	fi
-
 	if use vim-syntax ; then
 		newdoc editors/vim/README README-vim
 		rm editors/vim/README || die
@@ -111,12 +99,4 @@ src_install() {
 	fi
 
 	use python && python_optimize
-}
-
-pkg_postinst() {
-	use emacs && elisp-site-regen
-}
-
-pkg_postrm() {
-	use emacs && elisp-site-regen
 }
