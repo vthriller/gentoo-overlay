@@ -48,16 +48,7 @@ def try_fetch_symbols(filename, build_id, destination):
         pass
     path = os.path.join(filename, munge_build_id(build_id), filename + '.dbg.gz')
     url = urljoin(SYMBOL_SERVER_URL, quote(path))
-    try:
-        u = urlopen(url)
-        if u.getcode() != 200:
-            return None
-        print('Fetching symbols from {0}'.format(url))
-        with open(debug_file, 'wb') as f, gzip.GzipFile(fileobj=io.BytesIO(u.read()), mode='r') as z:
-            shutil.copyfileobj(z, f)
-            return debug_file
-    except:
-        return None
+    print(debug_file, '←', url)
 
 
 def fetch_symbols_for(objfile):
