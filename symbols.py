@@ -39,11 +39,9 @@ def munge_build_id(build_id):
                                    reversed(b[6:8]), b[8:16])) + '0'
 
 def try_fetch_symbols(filename, build_id):
-    debug_file = os.path.join(build_id[:2], build_id[2:] + '.debug')
-
     path = os.path.join(filename, munge_build_id(build_id), filename + '.dbg.gz')
     url = urljoin(SYMBOL_SERVER_URL, quote(path))
-    print(debug_file, '←', url)
+    print(url, '->', f'${{P}}-{build_id}.debug.gz')
 
 
 def fetch_symbols_for(file, build_id):
