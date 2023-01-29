@@ -59,17 +59,6 @@ def fetch_symbols_for(file, build_id):
         debug_file = try_fetch_symbols(os.path.basename(file), build_id, cache_dir)
 
 
-def new_objfile(event):
-    fetch_symbols_for(event.new_objfile)
-
-
-def fetch_symbols():
-    '''
-    Try to fetch symbols for all loaded modules.
-    '''
-    for objfile in gdb.objfiles():
-        fetch_symbols_for(objfile)
-
 # Create our debug cache dir.
 try:
     if not os.path.isdir(cache_dir):
