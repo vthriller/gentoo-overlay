@@ -27,7 +27,7 @@ except ImportError:
 from elftools.elf.elffile import ELFFile
 from elftools.common.exceptions import ELFError
 
-SYMBOL_SERVER_URL = 'https://s3-us-west-2.amazonaws.com/org.mozilla.crash-stats.symbols-public/v1/'
+SYMBOL_SERVER_URL = 'http://s3-us-west-2.amazonaws.com/org.mozilla.crash-stats.symbols-public/v1/'
 
 def munge_build_id(build_id):
     '''
