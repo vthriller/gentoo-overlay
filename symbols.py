@@ -105,14 +105,3 @@ try:
         os.makedirs(cache_dir)
 except OSError:
     pass
-
-# Set it as a debug-file-directory.
-try:
-    dirs = gdb.parameter('debug-file-directory').split(':')
-except gdb.error:
-    dirs = []
-if debug_dir not in dirs:
-    dirs.append(debug_dir)
-    gdb.execute('set debug-file-directory %s' % ':'.join(dirs))
-
-gdb.events.new_objfile.connect(new_objfile)
