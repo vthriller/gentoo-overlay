@@ -27,9 +27,6 @@ from elftools.common.exceptions import ELFError
 
 SYMBOL_SERVER_URL = 'https://s3-us-west-2.amazonaws.com/org.mozilla.crash-stats.symbols-public/v1/'
 
-debug_dir = os.path.join(os.environ['HOME'], '.cache', 'gdb')
-cache_dir = os.path.join(debug_dir, '.build-id')
-
 def munge_build_id(build_id):
     '''
     Breakpad stuffs the build id into a GUID struct so the bytes are
@@ -39,16 +36,9 @@ def munge_build_id(build_id):
     return ''.join(itertools.chain(reversed(b[:4]), reversed(b[4:6]),
                                    reversed(b[6:8]), b[8:16])) + '0'
 
-def try_fetch_symbols(filename, build_id, destination):
-    debug_file = os.path.join(destination, build_id[:2], build_id[2:] + '.debug')
-    if os.path.exists(debug_file):
-        return debug_file
-    try:
-        d = os.path.dirname(debug_file)
-        if not os.path.isdir(d):
-            os.makedirs(d)
-    except OSError:
-        pass
+def try_fetch_symbols(filename, build_id):
+    debug_file = os.path.join(build_id[:2], build_id[2:] + '.debug')
+
     path = os.path.join(filename, munge_build_id(build_id), filename + '.dbg.gz')
     url = urljoin(SYMBOL_SERVER_URL, quote(path))
     print(debug_file, '←', url)
@@ -56,15 +46,8 @@ def try_fetch_symbols(filename, build_id, destination):
 
 def fetch_symbols_for(file, build_id):
     if build_id:
-        debug_file = try_fetch_symbols(os.path.basename(file), build_id, cache_dir)
+        debug_file = try_fetch_symbols(os.path.basename(file), build_id)
 
-
-# Create our debug cache dir.
-try:
-    if not os.path.isdir(cache_dir):
-        os.makedirs(cache_dir)
-except OSError:
-    pass
 
 for dir, dirs, files in os.walk(sys.argv[1]):
     for f in files:
