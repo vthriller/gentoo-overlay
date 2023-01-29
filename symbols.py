@@ -78,10 +78,6 @@ def is_moz_binary(filename):
 
 def fetch_symbols_for(objfile):
     build_id = objfile.build_id if hasattr(objfile, 'build_id') else None
-    if getattr(objfile, 'owner', None) is not None or any(o.owner == objfile for o in gdb.objfiles()):
-        # This is either a separate debug file or this file already
-        # has symbols in a separate debug file.
-        return
     if build_id and is_moz_binary(objfile.filename):
         debug_file = try_fetch_symbols(os.path.basename(objfile.filename), build_id, cache_dir)
         if debug_file:
