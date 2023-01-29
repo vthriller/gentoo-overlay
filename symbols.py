@@ -60,25 +60,9 @@ def try_fetch_symbols(filename, build_id, destination):
         return None
 
 
-def is_moz_binary(filename):
-    '''
-    Try to determine if a file lives in a Firefox install dir, to save
-    HTTP requests for things that aren't going to work.
-    '''
-    # The linux-gate VDSO doesn't have a real filename.
-    if not os.path.isfile(filename):
-        return False
-    while True:
-        filename = os.path.dirname(filename)
-        if filename == '/':
-            return False
-        if os.path.isfile(os.path.join(filename, 'application.ini')):
-            return True
-
-
 def fetch_symbols_for(objfile):
     build_id = objfile.build_id if hasattr(objfile, 'build_id') else None
-    if build_id and is_moz_binary(objfile.filename):
+    if build_id:
         debug_file = try_fetch_symbols(os.path.basename(objfile.filename), build_id, cache_dir)
         if debug_file:
             objfile.add_separate_debug_file(debug_file)
