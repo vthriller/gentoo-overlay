@@ -22,6 +22,9 @@ except ImportError:
     from urllib import quote
     from urlparse import urljoin
 
+from elftools.elf.elffile import ELFFile
+from elftools.common.exceptions import ELFError
+
 SYMBOL_SERVER_URL = 'https://s3-us-west-2.amazonaws.com/org.mozilla.crash-stats.symbols-public/v1/'
 
 debug_dir = os.path.join(os.environ['HOME'], '.cache', 'gdb')
@@ -51,12 +54,9 @@ def try_fetch_symbols(filename, build_id, destination):
     print(debug_file, '←', url)
 
 
-def fetch_symbols_for(objfile):
-    build_id = objfile.build_id if hasattr(objfile, 'build_id') else None
+def fetch_symbols_for(file, build_id):
     if build_id:
-        debug_file = try_fetch_symbols(os.path.basename(objfile.filename), build_id, cache_dir)
-        if debug_file:
-            objfile.add_separate_debug_file(debug_file)
+        debug_file = try_fetch_symbols(os.path.basename(file), build_id, cache_dir)
 
 
 def new_objfile(event):
@@ -76,3 +76,29 @@ try:
         os.makedirs(cache_dir)
 except OSError:
     pass
+
+for dir, dirs, files in os.walk(sys.argv[1]):
+    for f in files:
+        f = os.path.join(dir, f)
+
+        try:
+            elf = ELFFile(open(f, 'rb'))
+        except ELFError:
+            # not an ELF
+            continue
+
+        build_id = None
+        for section in elf.iter_sections():
+            if section.name != '.note.gnu.build-id':
+                continue
+            for note in section.iter_notes():
+                if note['n_name'] != 'GNU':
+                    continue
+                if note['n_type'] != 'NT_GNU_BUILD_ID':
+                    continue
+                build_id = note['n_desc']
+                break
+            if build_id:
+                break
+
+        fetch_symbols_for(f, build_id)
