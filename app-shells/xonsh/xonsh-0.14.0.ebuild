@@ -15,6 +15,11 @@ LICENSE="BSD-2"
 SLOT="0"
 KEYWORDS="~amd64"
 
-DEPEND=""
+IUSE="ptk pygments"
+
+DEPEND="
+	ptk? ( dev-python/prompt-toolkit[${PYTHON_USEDEP}] )
+	pygments? ( dev-python/pygments[${PYTHON_USEDEP}] )
+"
 RDEPEND="${DEPEND}"
 BDEPEND=""
