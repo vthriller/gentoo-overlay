@@ -12,12 +12,13 @@ SRC_URI="https://github.com/Yubico/${PN}/archive/${PV}.tar.gz -> ${P}.tar.gz"
 LICENSE="BSD-2"
 SLOT="0/1"
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~loong ~m68k ~mips ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86"
-IUSE="nfc static-libs"
+IUSE="nfc pcsc static-libs"
 
 DEPEND="
 	dev-libs/libcbor:=
 	dev-libs/openssl:=
 	sys-libs/zlib:=
+	pcsc? ( sys-apps/pcsc-lite )
 	virtual/libudev:=
 "
 RDEPEND="
@@ -44,6 +45,7 @@ src_configure() {
 		-DBUILD_EXAMPLES=OFF
 		-DBUILD_STATIC_LIBS=$(usex static-libs)
 		-DNFC_LINUX=$(usex nfc)
+		-DUSE_PCSC=$(usex pcsc)
 	)
 
 	cmake_src_configure
